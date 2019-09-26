@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License along with 
  * this program. If not, see http://www.gnu.org/licenses/.
  */
-  
+
 /**
  * Domain Monitoring.gs
  * ====================
@@ -28,6 +28,7 @@
 // ------
 
 var DAYS_TO_EXPIRATION = 30
+var EXPIRATION_DATE = 'A4'
 
 // Constants
 // ---------
@@ -66,7 +67,7 @@ function onOpen() {
         .addToUi()
 
 } // onOpen()
-    
+
 /**
  * Check the name servers and access to a list of URLs
  */
@@ -158,11 +159,28 @@ function checkDomains() {
     // Check not due to expire soon
     // ----------------------------
     
+    // Check that there is a "expiration" sheet for this domain
+
+    // If not create one and update the formulas
+    var expirationSheet = SpreadsheetApp.getActive().getSheetByName(url)
+    
+    if (expirationSheet === null) {
+      
+      var value = 'https://www.whois.com/whois/' + url
+      var formula = '=IMPORTXML("' + value + '","//div[@class=' + "'df-value'" + ']")'
+      
+      expirationSheet = SpreadsheetApp.getActive().insertSheet(url)
+      expirationSheet.getRange('A1').setFormula(formula)
+      SpreadsheetApp.flush();
+      Log.info('Created new raw sheet for ' + url)  
+    }
+        
     var today = (new Date()).getTime()
     
-    if (domain.hasOwnProperty('expires_on')) {
+    var expiresOn = expirationSheet.getRange(EXPIRATION_DATE).getValue()
+
+    if (expiresOn instanceof Date) {
     
-      var expiresOn = domain.expires_on
       var expirationDate = expiresOn.getTime() - (DAYS_TO_EXPIRATION * 24 * 60 * 60 * 1000)
       
       if (today > expirationDate) {
@@ -183,7 +201,7 @@ function checkDomains() {
 
     row[EXPIRATION_DATE_COLUMN_INDEX] = expiresOn
     row[LAST_CHECKED_COLUMN_INDEX] = new Date()
-    
+
   })
   
   // Log results
@@ -208,6 +226,12 @@ function checkDomains() {
   
   data.unshift(header)
   dataRange.setValues(data)
+  
+  domainSheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName(DOMAINS_SHEET_NAME)
+  
+  SpreadsheetApp.setActiveSheet(domainSheet)
   
 } // checkDomains()
 
@@ -255,7 +279,7 @@ function whoisLookup_(domainName) {
     
   } else {
   
-//    sendEmail_('Could not get expiry date for ' + domainName)
+    sendEmail_('Could not get expiry date for ' + domainName)
   }
   
   return domain
@@ -287,8 +311,6 @@ function sendEmail_(message) {
   
 } // sendEmail_()
   
-
-
 function test_whoisLookup() {
   var dns1 = whoisLookup_('andrewroberts.net')
   return
