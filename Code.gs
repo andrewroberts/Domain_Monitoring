@@ -43,6 +43,7 @@ var CHANGED_COLUMN_INDEX         = 4
 var CHECK_URL_COLUMN_INDEX       = 5
 var EXPIRED_COLUMN_INDEX         = 6
 var EXPIRATION_DATE_COLUMN_INDEX = 7
+var EMAIL_SENT_COLUMN_INDEX      = 8
 
 // Log Library
 // -----------
@@ -187,8 +188,13 @@ function checkDomains() {
   
         row[EXPIRED_COLUMN_INDEX] = 'Yes'
         expirationDateSoon = true
-        Log.warning(url + ' expiration date soon ' + expiresOn)      
-  
+        Log.warning(url + ' expiration date soon ' + expiresOn)    
+        
+        if (row[EMAIL_SENT_COLUMN_INDEX] !== 'Yes') {
+          sendEmail_('DOMAIN WARNING: Expiration date soon')
+          row[EMAIL_SENT_COLUMN_INDEX] = 'Yes'
+        }
+          
       } else {
       
         row[EXPIRED_COLUMN_INDEX] = 'No'
@@ -216,7 +222,7 @@ function checkDomains() {
     
   } else if (expirationDateSoon) {
   
-    sendEmail_('DOMAIN WARNING: Expiration date soon')
+    // Checked in loop as need row number
         
   } else {
 
