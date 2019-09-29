@@ -187,10 +187,10 @@ function checkDomains() {
       if (today > expirationDate) {
   
         row[EXPIRED_COLUMN_INDEX] = 'Yes'
-        expirationDateSoon = true
-        Log.warning(url + ' expiration date soon ' + expiresOn)    
         
         if (row[EMAIL_SENT_COLUMN_INDEX] !== 'Yes') {
+          expirationDateSoon = true
+          Log.warning(url + ' expiration date soon ' + expiresOn)            
           sendEmail_('DOMAIN WARNING: Expiration date soon')
           row[EMAIL_SENT_COLUMN_INDEX] = 'Yes'
         }
