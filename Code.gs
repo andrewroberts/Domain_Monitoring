@@ -282,11 +282,7 @@ function whoisLookup_(domainName) {
     var month = dateString.slice(5,7) - 1
     var date = dateString.slice(8)
     domain.expires_on = new Date(year,month,date)
-    
-  } else {
-  
-    sendEmail_('Could not get expiry date for ' + domainName)
-  }
+  } 
   
   return domain
   
